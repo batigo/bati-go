@@ -16,10 +16,8 @@ type kfkbroker struct {
 	group   string
 	readers int
 	writers int
-	localid string
-
-	mutext sync.RWMutex
-	stoped bool
+	mutext  sync.RWMutex
+	stoped  bool
 }
 
 func (m *kfkbroker) run() {
@@ -46,15 +44,14 @@ func (m *kfkbroker) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.
 
 		//logger.Info("[%s] kfk broker recv msg: %s", m.postman.Service, msg.Value)
 
-		var chanmsg ServiceMsg
-		err := json.Unmarshal(msg.Value, &chanmsg)
+		var batiMsg BatiMsg
+		err := json.Unmarshal(msg.Value, &batiMsg)
 		if err != nil {
 			//logger.Error("[%s] failed to parse mqmsg: %s - %s", m.postman.Service, msg.Value, err.Error())
 			continue
 		}
 
-		chanmsg.ServiceId = m.postman.Service
-		err = m.postman.msghandler(chanmsg, m.postman.Service)
+		err = m.postman.msghandler(batiMsg, m.postman.Service)
 		if err != nil {
 			//logger.Error("[%s] postman failed to proc mqmsg: %s - %s", m.postman.Service, msg.Value, err.Error())
 			continue
@@ -64,7 +61,7 @@ func (m *kfkbroker) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.
 }
 
 func (m *kfkbroker) reader() {
-	topic := m.postman.Service + m.postman.typ.ReadChannelPrefix()
+	topic := fmt.Sprintf("bati_%s_up", m.postman.Service)
 	config := sarama.NewConfig()
 	config.Consumer.Return.Errors = true
 	config.Version = sarama.V1_0_0_0
@@ -122,7 +119,7 @@ func (m *kfkbroker) reader() {
 }
 
 func (m *kfkbroker) writer() {
-	topic := m.postman.Service + m.postman.typ.WriterChannelPrefix()
+	topic := fmt.Sprintf("bati_%s_down", m.postman.Service)
 	config := sarama.NewConfig()
 	config.Producer.Return.Errors = true
 	w, _ := sarama.NewAsyncProducer(m.brokers, config)
@@ -160,14 +157,13 @@ func (m *kfkbroker) writer() {
 		var ok bool
 		var msg ServiceMsg
 		select {
-		case msg, ok = <-m.postman.broadcastchan:
 		case msg, ok = <-m.postman.msgchan:
 		}
 		if !ok {
 			break
 		}
 
-		msg.T = getNowMillisecs()
+		msg.Ts = getNowMillisecs()
 		bs, _ := json.Marshal(msg)
 		kmsg := &sarama.ProducerMessage{
 			Topic: topic,
