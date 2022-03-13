@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -42,18 +43,18 @@ func (m *kfkbroker) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.
 	for msg := range claim.Messages() {
 		sess.MarkMessage(msg, "")
 
-		//logger.Info("[%s] kfk broker recv msg: %s", m.postman.Service, msg.Value)
+		log.Printf("[%s] kfk broker recv msg: %s", m.postman.Service, msg.Value)
 
 		var batiMsg BatiMsg
 		err := json.Unmarshal(msg.Value, &batiMsg)
 		if err != nil {
-			//logger.Error("[%s] failed to parse mqmsg: %s - %s", m.postman.Service, msg.Value, err.Error())
+			log.Printf("[%s] failed to parse mqmsg: %s - %s", m.postman.Service, msg.Value, err.Error())
 			continue
 		}
 
 		err = m.postman.msghandler(batiMsg, m.postman.Service)
 		if err != nil {
-			//logger.Error("[%s] postman failed to proc mqmsg: %s - %s", m.postman.Service, msg.Value, err.Error())
+			log.Printf("[%s] postman failed to proc mqmsg: %s - %s", m.postman.Service, msg.Value, err.Error())
 			continue
 		}
 	}
@@ -71,9 +72,9 @@ func (m *kfkbroker) reader() {
 		panic(fmt.Sprintf("[%s] failed to start kfk reader: %s", m.postman.Service, err.Error()))
 	}
 
-	//logger.Warn("[%s] kfk broker reader run", m.postman.Service)
+	log.Printf("[%s] kfk broker reader run", m.postman.Service)
 	defer func() {
-		//logger.Warn("[%s] kfk broker reader stop", m.postman.Service)
+		log.Printf("[%s] kfk broker reader stop", m.postman.Service)
 		r.Close()
 	}()
 
@@ -94,7 +95,7 @@ func (m *kfkbroker) reader() {
 				//
 			case err := <-r.Errors():
 				if err != nil {
-					//logger.Error("[%s] failed to consume kfk msg: %s", m.postman.Service, err.Error())
+					log.Printf("[%s] failed to consume kfk msg: %s", m.postman.Service, err.Error())
 				}
 			}
 		}
@@ -111,7 +112,7 @@ func (m *kfkbroker) reader() {
 
 		err := r.Consume(context.Background(), topics, m)
 		if err != nil {
-			//logger.Error("[%s] failed to consume kafka msg: %s", m.postman.Service, err.Error())
+			log.Printf("[%s] failed to consume kafka msg: %s", m.postman.Service, err.Error())
 			time.Sleep(100 * time.Millisecond)
 			continue
 		}
@@ -124,9 +125,9 @@ func (m *kfkbroker) writer() {
 	config.Producer.Return.Errors = true
 	w, _ := sarama.NewAsyncProducer(m.brokers, config)
 
-	//logger.Warn("[%s] kfk broker writer run", m.postman.Service)
+	log.Printf("[%s] kfk broker writer run", m.postman.Service)
 	defer func() {
-		//logger.Warn("[%s] kfk broker writer stop", m.postman.Service)
+		log.Printf("[%s] kfk broker writer stop", m.postman.Service)
 		w.Close()
 	}()
 
@@ -147,7 +148,7 @@ func (m *kfkbroker) writer() {
 				//
 			case err := <-w.Errors():
 				if err != nil {
-					//logger.Error("[%s] failed to produce kfk msg: %s", m.postman.Service, err.Error())
+					log.Printf("[%s] failed to produce kfk msg: %s", m.postman.Service, err.Error())
 				}
 			}
 		}
@@ -170,6 +171,6 @@ func (m *kfkbroker) writer() {
 			Value: sarama.ByteEncoder(bs),
 		}
 		w.Input() <- kmsg
-		//logger.Info("[%s] kfk broker send msg: %s", m.postman.Service, msg.Id)
+		log.Printf("[%s] kfk broker send msg: %s", m.postman.Service, msg.Id)
 	}
 }
