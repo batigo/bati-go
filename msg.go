@@ -1,9 +1,11 @@
 package bati
 
 import (
-	"encoding/json"
 	"fmt"
 )
+
+// uid for user id
+// cid for conn id
 
 type ServiceMsgType int8
 
@@ -47,14 +49,14 @@ const (
 )
 
 type BizData struct {
-	Type           BizType     `json:"type"`
-	Cids           []string    `json:"cids,omitempty"`
-	Uids           []string    `json:"uids,omitempty"`
-	Room           string      `json:"rid,omitempty"`
-	BroadcastRatio uint8       `json:"broadcast_ratio"`
-	BlackUids      []string    `json:"black_uids,omitempty"`
-	WhiteUids      []string    `json:"white_uids,omitempty"`
-	Data           interface{} `json:"data,omitempty"`
+	Type           BizType  `json:"type"`
+	Cids           []string `json:"cids,omitempty"`
+	Uids           []string `json:"uids,omitempty"`
+	Room           string   `json:"rid,omitempty"`
+	BroadcastRatio uint8    `json:"broadcast_ratio"`
+	BlackUids      []string `json:"black_uids,omitempty"`
+	WhiteUids      []string `json:"white_uids,omitempty"`
+	Data           []byte   `json:"data,omitempty"`
 }
 
 func (m ServiceMsg) String() string {
@@ -72,16 +74,16 @@ func (m ServiceMsg) String() string {
 type BatiMsgType = uint8
 
 const (
-	BatiMsgTypeBiz      = 1
-	BatiMsgTypeConnQuit = 2
+	BatiMsgTypeBiz      BatiMsgType = 1
+	BatiMsgTypeConnQuit BatiMsgType = 2
 )
 
 type BatiMsg struct {
-	Id   string          `json:"id"`
-	Type BatiMsgType     `json:"type"`
-	Data json.RawMessage `json:"data"`
-	Cid  string          `json:"cid"`
-	Uid  string          `json:"uid"`
-	Ip   string          `json:"ip"`
-	Ts   int64           `json:"ts"`
+	Id   string      `json:"id"`
+	Type BatiMsgType `json:"type"`
+	Data []byte      `json:"data"`
+	Cid  string      `json:"cid"`
+	Uid  string      `json:"uid"`
+	Ip   string      `json:"ip"`
+	Ts   int64       `json:"ts"`
 }
