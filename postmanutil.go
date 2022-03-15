@@ -1,6 +1,9 @@
 package bati
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // 将一个conn加入一组房间,
 // joinService = true, 这个conn会加入到service整体群组里面
@@ -89,6 +92,11 @@ func (p *Postman) SendConnsBizMsg(conns []string, room string, data interface{})
 		return fmt.Errorf("bad params: conns empty")
 	}
 
+	bs, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
 	return p.SendMsg(ServiceMsg{
 		Id:   GenMsgId(),
 		Type: ServiceMsgTypeBiz,
@@ -96,7 +104,7 @@ func (p *Postman) SendConnsBizMsg(conns []string, room string, data interface{})
 			Type: BizMsgTypeUsers,
 			Cids: conns,
 			Room: room,
-			Data: data,
+			Data: bs,
 		},
 		Ts: getNowMillisecs(),
 	})
@@ -109,6 +117,11 @@ func (p *Postman) SendUsersBizMsg(uids []string, room string, data interface{}) 
 		return fmt.Errorf("bad params: uids empty")
 	}
 
+	bs, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
 	return p.SendMsg(ServiceMsg{
 		Id:   GenMsgId(),
 		Type: ServiceMsgTypeBiz,
@@ -116,7 +129,7 @@ func (p *Postman) SendUsersBizMsg(uids []string, room string, data interface{}) 
 			Type: BizMsgTypeUsers,
 			Uids: uids,
 			Room: room,
-			Data: data,
+			Data: bs,
 		},
 		Ts: getNowMillisecs(),
 	})
@@ -128,13 +141,18 @@ func (p *Postman) SendRoomBizMsg(room string, data interface{}) error {
 		return fmt.Errorf("bad params: room empty")
 	}
 
+	bs, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
 	return p.SendMsg(ServiceMsg{
 		Id:   GenMsgId(),
 		Type: ServiceMsgTypeBiz,
 		BizData: &BizData{
 			Type: BizMsgTypeRoom,
 			Room: room,
-			Data: data,
+			Data: bs,
 		},
 		Ts: getNowMillisecs(),
 	})
@@ -149,13 +167,18 @@ func (p *Postman) SendRoomBizMsgCond(room string, data interface{}, ratio uint8,
 		return fmt.Errorf("bad params: room empty or ration is zero")
 	}
 
+	bs, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
 	return p.SendMsg(ServiceMsg{
 		Id:   GenMsgId(),
 		Type: ServiceMsgTypeBiz,
 		BizData: &BizData{
 			Type:           BizMsgTypeRoom,
 			Room:           room,
-			Data:           data,
+			Data:           bs,
 			BroadcastRatio: ratio,
 			WhiteUids:      whiteUids,
 			BlackUids:      blackUids,
@@ -165,12 +188,17 @@ func (p *Postman) SendRoomBizMsgCond(room string, data interface{}, ratio uint8,
 }
 
 func (p *Postman) SendServiceBizMsg(data interface{}) error {
+	bs, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
 	return p.SendMsg(ServiceMsg{
 		Id:   GenMsgId(),
 		Type: ServiceMsgTypeBiz,
 		BizData: &BizData{
 			Type: BizMsgTypeService,
-			Data: data,
+			Data: bs,
 		},
 		Ts: getNowMillisecs(),
 	})
@@ -181,12 +209,17 @@ func (p *Postman) SendServiceBizMsg(data interface{}) error {
 // ratio < 100 的情况下，whiteUids对应用conn不受ratio参数影响
 // blackUids对应的conn不会广播消息
 func (p *Postman) SendServiceBizMsgCond(data interface{}, ratio uint8, whiteUids, blackUids []string) error {
+	bs, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
 	return p.SendMsg(ServiceMsg{
 		Id:   GenMsgId(),
 		Type: ServiceMsgTypeBiz,
 		BizData: &BizData{
 			Type:           BizMsgTypeService,
-			Data:           data,
+			Data:           bs,
 			BroadcastRatio: ratio,
 			WhiteUids:      whiteUids,
 			BlackUids:      blackUids,
