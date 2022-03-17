@@ -29,7 +29,7 @@ type ServiceMsg struct {
 type JoinData struct {
 	Cid         string   `json:"cid,omitempty"`
 	Uid         string   `json:"uid,omitempty"`
-	JoinService bool     `json:"join_service,omitempty"`
+	JoinService bool     `json:"quit_service,omitempty"`
 	Rooms       []string `json:"rids,omitempty"`
 }
 

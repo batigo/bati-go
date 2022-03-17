@@ -18,7 +18,7 @@ func (p *Postman) SendConnJoinMsg(conn string, rooms []string, joinService bool)
 		Type: ServiceMsgTypeConnJoin,
 		JoinData: &JoinData{
 			Cid:         conn,
-			QuitService: joinService,
+			JoinService: joinService,
 			Rooms:       rooms,
 		},
 		Ts: getNowMillisecs(),
@@ -58,7 +58,7 @@ func (p *Postman) SendUidJoinMsg(uid string, rooms []string, joinService bool) e
 		Type: ServiceMsgTypeConnJoin,
 		JoinData: &JoinData{
 			Uid:         uid,
-			QuitService: joinService,
+			JoinService: joinService,
 			Rooms:       rooms,
 		},
 		Ts: getNowMillisecs(),
