@@ -53,7 +53,7 @@ type BizData struct {
 	Cids           []string `json:"cids,omitempty"`
 	Uids           []string `json:"uids,omitempty"`
 	Room           string   `json:"rid,omitempty"`
-	BroadcastRatio uint8    `json:"broadcast_ratio"`
+	BroadcastRatio uint8    `json:"broadcast_ratio,omitempty"`
 	BlackUids      []string `json:"black_uids,omitempty"`
 	WhiteUids      []string `json:"white_uids,omitempty"`
 	Data           []byte   `json:"data,omitempty"`
