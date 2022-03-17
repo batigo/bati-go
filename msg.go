@@ -1,6 +1,7 @@
 package bati
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -28,7 +29,7 @@ type ServiceMsg struct {
 type JoinData struct {
 	Cid         string   `json:"cid,omitempty"`
 	Uid         string   `json:"uid,omitempty"`
-	QuitService bool     `json:"quit_service,omitempty"`
+	JoinService bool     `json:"join_service,omitempty"`
 	Rooms       []string `json:"rids,omitempty"`
 }
 
@@ -62,7 +63,7 @@ type BizData struct {
 func (m ServiceMsg) String() string {
 	switch m.Type {
 	case ServiceMsgTypeConnJoin:
-		return fmt.Sprintf("[service conn-join-msg] id: %s, cid: %s, uid: %s, join-service: %v, rids: %v", m.Id, m.JoinData.Cid, m.JoinData.Uid, m.JoinData.QuitService, m.JoinData.Rooms)
+		return fmt.Sprintf("[service conn-join-msg] id: %s, cid: %s, uid: %s, join-service: %v, rids: %v", m.Id, m.JoinData.Cid, m.JoinData.Uid, m.JoinData., m.JoinData.Rooms)
 	case ServiceMsgTypeConnQuit:
 		return fmt.Sprintf("[service conn-quit-msg] id: %s, cid: %s, uid: %s, quit-service: %v, rids: %v", m.Id, m.QuitData.Cid, m.QuitData.Uid, m.QuitData.QuitService, m.QuitData.Rooms)
 	case ServiceMsgTypeBiz:
@@ -79,11 +80,11 @@ const (
 )
 
 type BatiMsg struct {
-	Id   string      `json:"id"`
-	Type BatiMsgType `json:"type"`
-	Data []byte      `json:"data"`
-	Cid  string      `json:"cid"`
-	Uid  string      `json:"uid"`
-	Ip   string      `json:"ip"`
-	Ts   int64       `json:"ts"`
+	Id   string          `json:"id"`
+	Type BatiMsgType     `json:"type"`
+	Data json.RawMessage `json:"data"`
+	Cid  string          `json:"cid"`
+	Uid  string          `json:"uid"`
+	Ip   string          `json:"ip"`
+	Ts   int64           `json:"ts"`
 }
