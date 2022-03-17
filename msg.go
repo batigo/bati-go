@@ -63,7 +63,7 @@ type BizData struct {
 func (m ServiceMsg) String() string {
 	switch m.Type {
 	case ServiceMsgTypeConnJoin:
-		return fmt.Sprintf("[service conn-join-msg] id: %s, cid: %s, uid: %s, join-service: %v, rids: %v", m.Id, m.JoinData.Cid, m.JoinData.Uid, m.JoinData., m.JoinData.Rooms)
+		return fmt.Sprintf("[service conn-join-msg] id: %s, cid: %s, uid: %s, join-service: %v, rids: %v", m.Id, m.JoinData.Cid, m.JoinData.Uid, m.JoinData.JoinService, m.JoinData.Rooms)
 	case ServiceMsgTypeConnQuit:
 		return fmt.Sprintf("[service conn-quit-msg] id: %s, cid: %s, uid: %s, quit-service: %v, rids: %v", m.Id, m.QuitData.Cid, m.QuitData.Uid, m.QuitData.QuitService, m.QuitData.Rooms)
 	case ServiceMsgTypeBiz:
