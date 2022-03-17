@@ -1,7 +1,6 @@
 package bati
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
@@ -80,11 +79,11 @@ const (
 )
 
 type BatiMsg struct {
-	Id   string          `json:"id"`
-	Type BatiMsgType     `json:"type"`
-	Data json.RawMessage `json:"data"`
-	Cid  string          `json:"cid"`
-	Uid  string          `json:"uid"`
-	Ip   string          `json:"ip"`
-	Ts   int64           `json:"ts"`
+	Id   string      `json:"id"`
+	Type BatiMsgType `json:"type"`
+	Data []byte      `json:"data"`
+	Cid  string      `json:"cid"`
+	Uid  string      `json:"uid"`
+	Ip   string      `json:"ip"`
+	Ts   int64       `json:"ts"`
 }
