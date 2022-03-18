@@ -13,15 +13,20 @@ func (p *Postman) SendConnJoinMsg(conn string, rooms []string, joinService bool)
 		return fmt.Errorf("bad params: rooms empty & joinService not enable")
 	}
 
+	data := JoinData{
+		Cid: &conn,
+	}
+	if len(rooms) > 0 {
+		data.Rooms = rooms
+	}
+	if joinService {
+		data.JoinService = &joinService
+	}
 	return p.SendMsg(ServiceMsg{
-		Id:   GenMsgId(),
-		Type: ServiceMsgTypeConnJoin,
-		JoinData: &JoinData{
-			Cid:         conn,
-			JoinService: joinService,
-			Rooms:       rooms,
-		},
-		Ts: getNowMillisecs(),
+		Id:       GenMsgId(),
+		Type:     ServiceMsg_ConnJoin,
+		JoinData: &data,
+		Ts:       getNowMillisecs(),
 	})
 }
 
@@ -33,15 +38,21 @@ func (p *Postman) SendConnQuitMsg(conn string, rooms []string, quitService bool)
 		return fmt.Errorf("bad params: rooms empty & quitService not enable")
 	}
 
+	data := QuitData{
+		Cid: &conn,
+	}
+	if len(rooms) > 0 {
+		data.Rooms = rooms
+	}
+	if quitService {
+		data.QuitService = &quitService
+	}
+
 	return p.SendMsg(ServiceMsg{
-		Id:   GenMsgId(),
-		Type: ServiceMsgTypeConnQuit,
-		QuitData: &QuitData{
-			Cid:         conn,
-			QuitService: quitService,
-			Rooms:       rooms,
-		},
-		Ts: getNowMillisecs(),
+		Id:       GenMsgId(),
+		Type:     ServiceMsg_ConnQuit,
+		QuitData: &data,
+		Ts:       getNowMillisecs(),
 	})
 }
 
@@ -53,15 +64,20 @@ func (p *Postman) SendUidJoinMsg(uid string, rooms []string, joinService bool) e
 		return fmt.Errorf("bad params: rooms empty & joinService not enable")
 	}
 
+	data := JoinData{
+		Uid: &uid,
+	}
+	if len(rooms) > 0 {
+		data.Rooms = rooms
+	}
+	if joinService {
+		data.JoinService = &joinService
+	}
 	return p.SendMsg(ServiceMsg{
-		Id:   GenMsgId(),
-		Type: ServiceMsgTypeConnJoin,
-		JoinData: &JoinData{
-			Uid:         uid,
-			JoinService: joinService,
-			Rooms:       rooms,
-		},
-		Ts: getNowMillisecs(),
+		Id:       GenMsgId(),
+		Type:     ServiceMsg_ConnJoin,
+		JoinData: &data,
+		Ts:       getNowMillisecs(),
 	})
 }
 
@@ -73,15 +89,20 @@ func (p *Postman) SendUidQuitMsg(uid string, rooms []string, quitService bool) e
 		return fmt.Errorf("bad params: rooms empty & quitService not enable")
 	}
 
+	data := QuitData{
+		Uid: &uid,
+	}
+	if len(rooms) > 0 {
+		data.Rooms = rooms
+	}
+	if quitService {
+		data.QuitService = &quitService
+	}
 	return p.SendMsg(ServiceMsg{
-		Id:   GenMsgId(),
-		Type: ServiceMsgTypeConnQuit,
-		QuitData: &QuitData{
-			Uid:         uid,
-			QuitService: quitService,
-			Rooms:       rooms,
-		},
-		Ts: getNowMillisecs(),
+		Id:       GenMsgId(),
+		Type:     ServiceMsg_ConnQuit,
+		QuitData: &data,
+		Ts:       getNowMillisecs(),
 	})
 }
 
@@ -99,11 +120,11 @@ func (p *Postman) SendConnsBizMsg(conns []string, room string, data interface{})
 
 	return p.SendMsg(ServiceMsg{
 		Id:   GenMsgId(),
-		Type: ServiceMsgTypeBiz,
+		Type: ServiceMsg_Biz,
 		BizData: &BizData{
-			Type: BizMsgTypeUsers,
+			Type: BizData_Users,
 			Cids: conns,
-			Room: room,
+			Room: &room,
 			Data: bs,
 		},
 		Ts: getNowMillisecs(),
@@ -122,20 +143,23 @@ func (p *Postman) SendUsersBizMsg(uids []string, room string, data interface{}) 
 		return err
 	}
 
+	bdata := BizData{
+		Type: BizData_Users,
+		Uids: uids,
+		Data: bs,
+	}
+	if room != "" {
+		bdata.Room = &room
+	}
 	return p.SendMsg(ServiceMsg{
-		Id:   GenMsgId(),
-		Type: ServiceMsgTypeBiz,
-		BizData: &BizData{
-			Type: BizMsgTypeUsers,
-			Uids: uids,
-			Room: room,
-			Data: bs,
-		},
-		Ts: getNowMillisecs(),
+		Id:      GenMsgId(),
+		Type:    ServiceMsg_Biz,
+		BizData: &bdata,
+		Ts:      getNowMillisecs(),
 	})
 }
 
-// 向一个房间内所有conn发送消息
+// 向一个room内所有conn广播消息
 func (p *Postman) SendRoomBizMsg(room string, data interface{}) error {
 	if len(room) == 0 {
 		return fmt.Errorf("bad params: room empty")
@@ -148,10 +172,10 @@ func (p *Postman) SendRoomBizMsg(room string, data interface{}) error {
 
 	return p.SendMsg(ServiceMsg{
 		Id:   GenMsgId(),
-		Type: ServiceMsgTypeBiz,
+		Type: ServiceMsg_Biz,
 		BizData: &BizData{
-			Type: BizMsgTypeRoom,
-			Room: room,
+			Type: BizData_Room,
+			Room: &room,
 			Data: bs,
 		},
 		Ts: getNowMillisecs(),
@@ -162,7 +186,7 @@ func (p *Postman) SendRoomBizMsg(room string, data interface{}) error {
 // ratio=x: 广播比率, 向room内x%的conn广播消息
 // ratio < 100 的情况下，whiteUids对应用conn不受ratio参数影响
 // blackUids对应的conn不会广播消息
-func (p *Postman) SendRoomBizMsgCond(room string, data interface{}, ratio uint8, whiteUids, blackUids []string) error {
+func (p *Postman) SendRoomBizMsgCond(room string, data interface{}, ratio uint32, whiteUids, blackUids []string) error {
 	if len(room) == 0 || ratio == 0 {
 		return fmt.Errorf("bad params: room empty or ration is zero")
 	}
@@ -172,21 +196,28 @@ func (p *Postman) SendRoomBizMsgCond(room string, data interface{}, ratio uint8,
 		return err
 	}
 
+	bdata := BizData{
+		Type:      BizData_Room,
+		Data:      bs,
+		WhiteUids: whiteUids,
+		BlackUids: blackUids,
+	}
+	if len(room) > 0 {
+		bdata.Room = &room
+	}
+	if ratio > 0 {
+		bdata.BroadcastRatio = &ratio
+	}
+
 	return p.SendMsg(ServiceMsg{
-		Id:   GenMsgId(),
-		Type: ServiceMsgTypeBiz,
-		BizData: &BizData{
-			Type:           BizMsgTypeRoom,
-			Room:           room,
-			Data:           bs,
-			BroadcastRatio: ratio,
-			WhiteUids:      whiteUids,
-			BlackUids:      blackUids,
-		},
-		Ts: getNowMillisecs(),
+		Id:      GenMsgId(),
+		Type:    ServiceMsg_Biz,
+		BizData: &bdata,
+		Ts:      getNowMillisecs(),
 	})
 }
 
+// 向一个service内所有conn发送消息
 func (p *Postman) SendServiceBizMsg(data interface{}) error {
 	bs, err := json.Marshal(data)
 	if err != nil {
@@ -195,9 +226,9 @@ func (p *Postman) SendServiceBizMsg(data interface{}) error {
 
 	return p.SendMsg(ServiceMsg{
 		Id:   GenMsgId(),
-		Type: ServiceMsgTypeBiz,
+		Type: ServiceMsg_Biz,
 		BizData: &BizData{
-			Type: BizMsgTypeService,
+			Type: BizData_Service,
 			Data: bs,
 		},
 		Ts: getNowMillisecs(),
@@ -208,7 +239,32 @@ func (p *Postman) SendServiceBizMsg(data interface{}) error {
 // ratio=x: 广播比率, 向room内x%的conn广播消息
 // ratio < 100 的情况下，whiteUids对应用conn不受ratio参数影响
 // blackUids对应的conn不会广播消息
-func (p *Postman) SendServiceBizMsgCond(data interface{}, ratio uint8, whiteUids, blackUids []string) error {
+func (p *Postman) SendServiceBizMsgCond(data interface{}, ratio uint32, whiteUids, blackUids []string) error {
+	bs, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	bdata := BizData{
+		Type:      BizData_Service,
+		Data:      bs,
+		WhiteUids: whiteUids,
+		BlackUids: blackUids,
+	}
+	if ratio > 0 {
+		bdata.BroadcastRatio = &ratio
+	}
+
+	return p.SendMsg(ServiceMsg{
+		Id:      GenMsgId(),
+		Type:    ServiceMsg_Biz,
+		BizData: &bdata,
+		Ts:      getNowMillisecs(),
+	})
+}
+
+// 向bati所有所有conn发送消息
+func (p *Postman) SendAllBizMsg(data interface{}) error {
 	bs, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -216,14 +272,39 @@ func (p *Postman) SendServiceBizMsgCond(data interface{}, ratio uint8, whiteUids
 
 	return p.SendMsg(ServiceMsg{
 		Id:   GenMsgId(),
-		Type: ServiceMsgTypeBiz,
+		Type: ServiceMsg_Biz,
 		BizData: &BizData{
-			Type:           BizMsgTypeService,
-			Data:           bs,
-			BroadcastRatio: ratio,
-			WhiteUids:      whiteUids,
-			BlackUids:      blackUids,
+			Type: BizData_All,
+			Data: bs,
 		},
 		Ts: getNowMillisecs(),
+	})
+}
+
+// 向bati所有所有conn发送消息, 额外附带一些控制条件
+// ratio=x: 广播比率, 向room内x%的conn广播消息
+// ratio < 100 的情况下，whiteUids对应用conn不受ratio参数影响
+// blackUids对应的conn不会广播消息
+func (p *Postman) SendAllBizMsgCond(data interface{}, ratio uint32, whiteUids, blackUids []string) error {
+	bs, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	bdata := BizData{
+		Type:      BizData_All,
+		Data:      bs,
+		WhiteUids: whiteUids,
+		BlackUids: blackUids,
+	}
+	if ratio > 0 {
+		bdata.BroadcastRatio = &ratio
+	}
+
+	return p.SendMsg(ServiceMsg{
+		Id:      GenMsgId(),
+		Type:    ServiceMsg_Biz,
+		BizData: &bdata,
+		Ts:      getNowMillisecs(),
 	})
 }

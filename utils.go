@@ -45,13 +45,23 @@ func getlocalhostid() string {
 	return name
 }
 
-const milliunit = int64(time.Millisecond)
-
-func getNowMillisecs() int64 {
-	return time.Now().UnixNano() / milliunit
+func getNowMillisecs() uint64 {
+	return uint64(time.Now().UnixMilli())
 }
 
 func GenMsgId() string {
 	s, _ := uuid.GenerateUUID()
 	return fmt.Sprintf("%x", md5.Sum([]byte(s)))[:12]
+}
+
+func (x *ServiceMsg) Str() string {
+	switch x.Type {
+	case ServiceMsg_ConnJoin:
+		return fmt.Sprintf("[service conn-join-msg] id: %s, cid: %s, uid: %s, join-service: %v, rids: %v", x.Id, x.JoinData.Cid, x.JoinData.Uid, x.JoinData.JoinService, x.JoinData.Rooms)
+	case ServiceMsg_ConnQuit:
+		return fmt.Sprintf("[service conn-quit-msg] id: %s, cid: %s, uid: %s, quit-service: %v, rids: %v", x.Id, x.QuitData.Cid, x.QuitData.Uid, x.QuitData.QuitService, x.QuitData.Rooms)
+	case ServiceMsg_Biz:
+		return fmt.Sprintf("[service biz-msg] id: %s, cid: %s, uid: %s, quit-service: %v, rids: %v", x.Id, x.QuitData.Cid, x.QuitData.Uid, x.QuitData.QuitService, x.QuitData.Rooms)
+	}
+	return fmt.Sprintf("id: %s, typ: %d", x.Id, x.Type)
 }

@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/Shopify/sarama v1.32.0
 	github.com/hashicorp/go-uuid v1.0.2
+	google.golang.org/protobuf v1.27.1
 )
 
 require (
