@@ -2,8 +2,8 @@ package bati
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"google.golang.org/protobuf/proto"
 	"log"
 	"sync"
 	"time"
@@ -46,7 +46,7 @@ func (m *kfkbroker) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.
 		log.Printf("[%s] kfk broker recv msg: %s", m.postman.Service, msg.Value)
 
 		var batiMsg BatiMsg
-		err := json.Unmarshal(msg.Value, &batiMsg)
+		err := proto.Unmarshal(msg.Value, &batiMsg)
 		if err != nil {
 			log.Printf("[%s] failed to parse mqmsg: %s - %s", m.postman.Service, msg.Value, err.Error())
 			continue
@@ -165,7 +165,7 @@ func (m *kfkbroker) writer() {
 		}
 
 		msg.Ts = getNowMillisecs()
-		bs, _ := json.Marshal(msg)
+		bs, _ := proto.Marshal(&msg)
 		kmsg := &sarama.ProducerMessage{
 			Topic: topic,
 			Value: sarama.ByteEncoder(bs),
